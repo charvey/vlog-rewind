@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/moment@2.29.1/moment.js"></script>
+
+    <title>Vlog Rewind</title>
+</head>
+
+<body>
+    <header style="padding: 0;">
+        <h1>Vlog Rewind</h1>
+    </header>
+    <main></main>
+
+    <script type="text/javascript">
+        class YouTubeVideo extends React.Component {
+            render() {
+                return React.createElement("iframe",
+                    {
+                        width: 560, height: 315,
+                        src: 'https://www.youtube.com/embed/' + this.props.videoId,
+                        frameborder: '0',
+                        allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+                        allowfullscreen: 'true'
+                    });
+            }
+        }
+
+        class Video extends React.Component {
+            render() {
+                return React.createElement(
+                    "section", null,
+                    React.createElement("header", null,
+                        React.createElement("h2", null, this.props.title),
+                        React.createElement("h3", null, this.props.publishedAt.toDateString())
+                    ),
+                    React.createElement(YouTubeVideo, { videoId: this.props.videoId }),
+                );
+            }
+        }
+
+        class Preview extends React.Component {
+            render() {
+                var x = moment(this.props.video.publishedAt).add(this.props.offset).calendar();
+
+                return React.createElement('section', null, React.createElement('p', null, 'Next video appears ' + x));
+            }
+        }
+
+        fetch('UUtinbF-Q-fVthA0qrFQTgXQ.json')
+            .then(r => r.json())
+            .then(r => {
+                r.forEach(i => i.publishedAt = new Date(i.publishedAt));
+                r.sort(function (a, b) { return a.publishedAt - b.publishedAt });
+
+                var offset = moment.duration(5, 'years');
+
+                var j = 0;
+                for (var i = 0; i < r.length; i++) {
+                    if (moment(r[i].publishedAt).add(offset) > moment())
+                        break;
+                    j = i;
+                }
+
+                ReactDOM.render(React.createElement('div', null,
+                    React.createElement(Video, r[j]),
+                    React.createElement(Preview, { video: r[j + 1], offset: offset })
+                ), document.getElementsByTagName('main')[0]);
+            });
+    </script>
+</body>
+
+</html>
